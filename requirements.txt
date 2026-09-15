@@ -1,0 +1,9 @@
+# Campus Now has no external Python dependencies for the schedule engine.
+# It uses only the Python 3 standard library (zoneinfo, json, http.server, pathlib).
+#
+# Python 3.9+ is recommended for native zoneinfo support.
+# Python 3.8 requires: backports.zoneinfo
+
+# No pip install needed for core functionality.
+# For notifications (optional):
+#   libnotify (provides notify-send) - install via your package manager

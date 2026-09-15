@@ -1,0 +1,96 @@
+{
+  "timezone": "Asia/Jakarta",
+  "days": {
+    "monday": [
+      {
+        "subject": "Pengantar Bisnis",
+        "code": "002046",
+        "sks": 3,
+        "lecturer": "Masculine Muhammad Muqorobin, S.E., M.Si.",
+        "class": "01",
+        "start": "15:10",
+        "end": "17:40",
+        "room": "A.3b.4"
+      }
+    ],
+    "tuesday": [
+      {
+        "subject": "Bahasa Inggris",
+        "code": "001006",
+        "sks": 2,
+        "lecturer": "Gilang Fadhilia Arvianti, S.S., M.Hum.",
+        "class": "02",
+        "start": "10:00",
+        "end": "11:40",
+        "room": "A.4b.7 (Lab. Komputer)"
+      },
+      {
+        "subject": "Budaya dan Karakter Tidar",
+        "code": "001016",
+        "sks": 2,
+        "lecturer": "Endang Kartini Panggiarti, S.E., M.Si.",
+        "class": "01",
+        "start": "13:40",
+        "end": "15:20",
+        "room": "A.3b.1"
+      }
+    ],
+    "wednesday": [
+      {
+        "subject": "Ketentuan Umum Perpajakan",
+        "code": "106001",
+        "sks": 2,
+        "lecturer": "Afif Musthafa, S.Ak., M.Ak.",
+        "class": "01",
+        "start": "07:00",
+        "end": "08:40",
+        "room": "A.3b.5"
+      },
+      {
+        "subject": "Bahasa Indonesia",
+        "code": "001003",
+        "sks": 2,
+        "lecturer": "Sri Wulandari, S.S., M.Hum.",
+        "class": "01",
+        "start": "10:40",
+        "end": "12:20",
+        "room": "A.3b.2"
+      },
+      {
+        "subject": "Pengantar Akuntansi",
+        "code": "002047",
+        "sks": 3,
+        "lecturer": "Retnosari, S.Pd., M.Si.",
+        "class": "01",
+        "start": "12:30",
+        "end": "15:00",
+        "room": "A.3b.6"
+      }
+    ],
+    "thursday": [
+      {
+        "subject": "Matematika Bisnis",
+        "code": "002044",
+        "sks": 3,
+        "lecturer": "Yulida Army Nurcahya, M.Acc.",
+        "class": "01",
+        "start": "07:00",
+        "end": "09:30",
+        "room": "A.3b.2"
+      },
+      {
+        "subject": "Pengantar Teori Ekonomi",
+        "code": "002048",
+        "sks": 3,
+        "lecturer": "Endang Kartini Panggiarti, S.E., M.Si.",
+        "class": "01",
+        "start": "09:40",
+        "end": "12:10",
+        "room": "A.3b.1"
+      }
+    ],
+    "friday": [],
+    "saturday": [],
+    "sunday": []
+  }
+}

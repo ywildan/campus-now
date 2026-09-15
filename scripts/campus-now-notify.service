@@ -1,0 +1,7 @@
+[Unit]
+Description=Campus Now - class start reminder
+After=default.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/python3 /home/ywldan/Projects/campus-now/notify.py

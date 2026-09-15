@@ -1,0 +1,14 @@
+id = "noctalia/campus-now"
+name = "Campus Now"
+version = "1.0.0"
+plugin_api = 9
+author = "ywldan"
+license = "MIT"
+dependencies = []
+tags = ["education", "schedule"]
+icon = "calendar-clock"
+description = "Shows the current or next class from your campus schedule in the bar."
+
+[[widget]]
+id = "next-class"
+entry = "widget.luau"

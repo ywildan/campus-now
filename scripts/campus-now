@@ -1,0 +1,303 @@
+#!/usr/bin/env python3
+"""
+Campus Now - CLI interface to the schedule engine.
+
+Usage:
+  campus-now now      Show current and next class
+  campus-now next     Show next upcoming class
+  campus-now today    Show today's classes
+  campus-now tomorrow Show tomorrow's classes
+  campus-now week     Show this week's classes
+  campus-now panel    Output for Noctalia / Hyprland panel (JSON)
+  campus-now json     Full JSON status dump
+
+Options:
+  --at "YYYY-MM-DD HH:MM"  Simulate a specific datetime (Asia/Jakarta)
+"""
+
+from __future__ import annotations
+
+import json
+import os
+import sys
+from datetime import datetime
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+PROJECT_DIR = os.path.dirname(SCRIPT_DIR)
+sys.path.insert(0, PROJECT_DIR)
+
+from schedule import (
+    ScheduleEngine,
+    ScheduleError,
+    DAY_NAMES,
+    SHORT_DAY_NAMES,
+    format_duration,
+    parse_datetime_override,
+    VALID_DAYS,
+)
+
+
+def _print_now(engine: ScheduleEngine, override_dt: datetime | None = None) -> None:
+    dt = override_dt if override_dt is not None else engine.now()
+    current = engine.current_class(dt)
+    nxt = engine.next_class_with_day(dt)
+
+    if current:
+        start = current["start"]
+        end = current["end"]
+        remaining = engine.minutes_remaining(dt)
+        progress = engine.class_progress(dt)
+        print("CURRENT CLASS")
+        print(current["subject"])
+        print(f"{start} - {end}")
+        print(f"Room: {current['room']}")
+        if remaining is not None:
+            print(f"\nEnds in {remaining} minutes")
+        if progress is not None:
+            print(f"Progress: {int(progress * 100)}%")
+    else:
+        print("No class is currently running.")
+
+    if nxt:
+        cls, day_key = nxt
+        mins = engine.minutes_until_next(dt)
+        print(f"\nNext:")
+        print(cls["subject"])
+        print(f"{DAY_NAMES[day_key]} {cls['start']}")
+        print(cls["room"])
+        if mins is not None:
+            print(f"Starts in {format_duration(mins)}")
+
+
+def _print_next(engine: ScheduleEngine, override_dt: datetime | None = None) -> None:
+    dt = override_dt if override_dt is not None else engine.now()
+    nxt = engine.next_class_with_day(dt)
+    if nxt is None:
+        print("No upcoming classes found in the next 7 days.")
+        return
+    cls, day_key = nxt
+    mins = engine.minutes_until_next(dt)
+    print(cls["subject"])
+    print(f"{DAY_NAMES[day_key]} {cls['start']}")
+    print(cls["room"])
+    if mins is not None:
+        print(f"\nStarts in {format_duration(mins)}")
+
+
+def _print_today(engine: ScheduleEngine, override_dt: datetime | None = None) -> None:
+    dt = override_dt if override_dt is not None else engine.now()
+    today = engine.today_classes(dt)
+    day_key = engine.today_key(dt)
+
+    if not today:
+        print(f"No classes today ({DAY_NAMES[day_key]}).")
+    else:
+        print(f"Today ({DAY_NAMES[day_key]}):")
+        for cls in today:
+            print(f"  {cls['start']} - {cls['end']}  {cls['subject']}  ({cls['room']})")
+
+
+def _print_tomorrow(engine: ScheduleEngine, override_dt: datetime | None = None) -> None:
+    from datetime import timedelta
+    base = override_dt if override_dt is not None else engine.now()
+    tomorrow_dt = base + timedelta(days=1)
+    day_key = VALID_DAYS[tomorrow_dt.weekday()]
+    tomorrow = engine.classes_for_day(day_key)
+
+    if not tomorrow:
+        print(f"No classes tomorrow ({DAY_NAMES[day_key]}).")
+    else:
+        print(f"Tomorrow ({DAY_NAMES[day_key]}):")
+        for cls in tomorrow:
+            print(f"  {cls['start']} - {cls['end']}  {cls['subject']}  ({cls['room']})")
+
+
+def _print_week(engine: ScheduleEngine, override_dt: datetime | None = None) -> None:
+    base = override_dt if override_dt is not None else engine.now()
+    week = engine.week_classes(base)
+    for day_key in VALID_DAYS:
+        classes = week.get(day_key, [])
+        if classes:
+            print(f"{DAY_NAMES[day_key]}:")
+            for cls in classes:
+                print(f"  {cls['start']} - {cls['end']}  {cls['subject']}  ({cls['room']})")
+        else:
+            print(f"{DAY_NAMES[day_key]}: (no classes)")
+
+
+def _print_json(engine: ScheduleEngine, override_dt: datetime | None = None) -> None:
+    dt = override_dt if override_dt is not None else engine.now()
+    current = engine.current_class(dt)
+    nxt = engine.next_class_with_day(dt)
+
+    status = {
+        "state": "now" if current else "next",
+        "current": None,
+        "next": None,
+        "today": [],
+        "classes_finished": False,
+    }
+
+    if current:
+        remaining = engine.minutes_remaining(dt)
+        progress = engine.class_progress(dt)
+        status["current"] = {
+            "subject": current["subject"],
+            "code": current.get("code"),
+            "sks": current.get("sks"),
+            "lecturer": current.get("lecturer"),
+            "class": current.get("class"),
+            "start": current["start"],
+            "end": current["end"],
+            "room": current["room"],
+            "minutes_remaining": remaining,
+            "progress": progress,
+        }
+
+    if nxt:
+        cls, day_key = nxt
+        mins = engine.minutes_until_next(dt)
+        status["next"] = {
+            "subject": cls["subject"],
+            "code": cls.get("code"),
+            "sks": cls.get("sks"),
+            "lecturer": cls.get("lecturer"),
+            "class": cls.get("class"),
+            "day": day_key,
+            "day_name": DAY_NAMES[day_key],
+            "short_day": SHORT_DAY_NAMES[day_key],
+            "start": cls["start"],
+            "end": cls["end"],
+            "room": cls["room"],
+            "minutes_until": mins,
+        }
+
+    today_classes = engine.today_classes(dt)
+    status["classes_finished"] = engine.classes_finished_today(dt)
+    for cls in today_classes:
+        status["today"].append({
+            "subject": cls["subject"],
+            "start": cls["start"],
+            "end": cls["end"],
+            "room": cls["room"],
+        })
+
+    print(json.dumps(status, indent=2))
+
+
+def _print_panel(engine: ScheduleEngine, override_dt: datetime | None = None) -> None:
+    """Output for Noctalia / Hyprland panel widget (JSON format)."""
+    dt = override_dt if override_dt is not None else engine.now()
+    current = engine.current_class(dt)
+    nxt = engine.next_class_with_day(dt)
+
+    if current:
+        remaining = engine.minutes_remaining(dt)
+        progress = engine.class_progress(dt)
+        pct = int(progress * 100) if progress else 0
+        result = {
+            "text": f"󰑮 {current['subject'].split()[0]} · {remaining}m left",
+            "tooltip": (
+                f"{current['subject']}\n"
+                f"{current['start']} - {current['end']}\n"
+                f"{current['room']}\n"
+                f"{pct}% complete"
+            ),
+            "state": "now",
+        }
+    elif nxt:
+        cls, day_key = nxt
+        mins = engine.minutes_until_next(dt)
+        result = {
+            "text": f"󰃭 {cls['subject'].split()[0]} · {cls['start']} · {format_duration(mins) if mins else '?'}",
+            "tooltip": (
+                f"{cls['subject']}\n"
+                f"{DAY_NAMES[day_key]} {cls['start']} - {cls['end']}\n"
+                f"{cls['room']}\n"
+                f"Starts in {format_duration(mins) if mins else '?'}"
+            ),
+            "state": "next",
+        }
+    else:
+        result = {
+            "text": "󰃭 No class",
+            "tooltip": "No upcoming classes in the next 7 days",
+            "state": "none",
+        }
+
+    print(json.dumps(result))
+
+
+def main(argv=None) -> int:
+    if argv is None:
+        argv = sys.argv[1:]
+
+    if not argv or argv[0] in ("--help", "-h", "help"):
+        print(
+            "Campus Now CLI\n"
+            "\n"
+            "Usage:\n"
+            "  campus-now now      Show current and next class\n"
+            "  campus-now next     Show next upcoming class\n"
+            "  campus-now today    Show today's classes\n"
+            "  campus-now tomorrow Show tomorrow's classes\n"
+            "  campus-now week     Show this week's classes\n"
+            "  campus-now panel    Output for Noctalia / Hyprland panel (JSON)\n"
+            "  campus-now json     Full JSON status dump\n"
+            "\n"
+            "Options:\n"
+            "  --at \"YYYY-MM-DD HH:MM\"  Simulate a specific datetime (Asia/Jakarta)\n"
+        )
+        return 0
+
+    # Parse --at override
+    args = list(argv)
+    at_index = None
+    for i, arg in enumerate(args):
+        if arg == "--at":
+            at_index = i
+            break
+    cmd = args[0] if args else ""
+
+    try:
+        engine = ScheduleEngine()
+    except ScheduleError as exc:
+        print(f"Error: {exc}", file=sys.stderr)
+        return 1
+
+    # Parse --at now that we have the engine's timezone
+    override_dt = None
+    if at_index is not None:
+        if at_index + 1 >= len(args):
+            print("Error: --at requires a datetime argument.", file=sys.stderr)
+            print('Format: YYYY-MM-DD HH:MM (e.g. "2026-09-15 10:30")', file=sys.stderr)
+            return 1
+        at_value = args[at_index + 1]
+        try:
+            override_dt = parse_datetime_override(at_value, engine.tz)
+        except ScheduleError as exc:
+            print(f"Error: {exc}", file=sys.stderr)
+            return 1
+
+    handlers = {
+        "now": _print_now,
+        "next": _print_next,
+        "today": _print_today,
+        "tomorrow": _print_tomorrow,
+        "week": _print_week,
+        "json": _print_json,
+        "panel": _print_panel,
+    }
+
+    handler = handlers.get(cmd)
+    if handler is None:
+        print(f"Unknown command: {cmd}", file=sys.stderr)
+        print("Run 'campus-now --help' for usage.", file=sys.stderr)
+        return 1
+
+    handler(engine, override_dt)
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main())

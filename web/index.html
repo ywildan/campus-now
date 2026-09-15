@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#121212" />
+  <title>Campus Now</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="icon" href="/icon-192.png" />
+  <link rel="stylesheet" href="/style.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header with date -->
+    <header class="header">
+      <div class="date-display" id="dateDisplay">
+        <span class="day-name" id="dayName">MONDAY</span>
+        <span class="date-text" id="dateText">Sep 14, 2026</span>
+      </div>
+    </header>
+
+    <!-- Main Now/Next card -->
+    <main class="main-card" id="mainCard">
+      <div class="state-label" id="stateLabel">NEXT CLASS</div>
+      <div class="subject" id="subject">--</div>
+      <div class="time-range" id="timeRange">--</div>
+      <div class="room" id="room">--</div>
+
+      <!-- Countdown (for next class) -->
+      <div class="countdown" id="countdown" style="display: none;">
+        Starts in
+        <div class="countdown-value" id="countdownValue">0m</div>
+      </div>
+
+      <!-- Ends in (for current class) -->
+      <div class="ends-in" id="endsIn" style="display: none;">
+        Ends in
+        <div class="countdown-value" id="endsInValue">0m</div>
+      </div>
+
+      <!-- Progress bar (for current class) -->
+      <div class="progress-container" id="progressContainer" style="display: none;">
+        <div class="progress-bar" id="progressBar"></div>
+        <div class="progress-handle" id="progressHandle"></div>
+      </div>
+
+      <!-- Progress text -->
+      <div class="progress-text" id="progressText" style="display: none;"></div>
+    </main>
+
+    <!-- Today's classes -->
+    <section class="today-section">
+      <h2 class="section-title">TODAY</h2>
+      <div class="class-list" id="classList">
+        <!-- Classes populated by JS -->
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+      <span class="powered">Campus Now</span>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# Virtualenv
+.venv/
+
+# Tests / tooling
+.pytest_cache/
+
+# Local state / runtime
+.cache/
+*.log
+
+# Backups
+*.bak
+*.bak.*
+
+# Editor
+.vscode/
+.idea/
