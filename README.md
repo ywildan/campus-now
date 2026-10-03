@@ -35,7 +35,8 @@ campus-now/
 │   ├── style.css          # Dark minimalist CSS
 │   ├── app.js             # Vanilla JS (fetches API, updates in real-time)
 │   ├── manifest.json      # PWA manifest
-│   └── icon.svg           # PWA icon (SVG, any size)
+│   ├── icon-192.png       # PWA icon
+│   └── icon-512.png       # PWA icon
 ├── scripts/
 │   ├── campus-now         # Python CLI (now, next, today, tomorrow, week, panel, json)
 │   ├── next-class.sh      # Bash wrapper for Noctalia panel output
